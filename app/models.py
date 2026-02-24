@@ -31,3 +31,8 @@ class Equipment(Base):
         else:
             return "OK"
  
+class Mail(Base):
+    __tablename__ = "recipients"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, nullable=False, unique=True)

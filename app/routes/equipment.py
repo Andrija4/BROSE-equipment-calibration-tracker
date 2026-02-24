@@ -5,12 +5,14 @@ from fastapi.responses import RedirectResponse
 from datetime import date
 import asyncio
 import json
+from ..mailing.mailer import Mailer
 
-from ..database import SessionLocal
+from ..database import SessionLocal, SessionLocalMail
 from .. import crud, schemas
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+mailer = Mailer()  # Initialize the mailer to ensure the database is set up
 
 class ConnectionManager:
     def __init__(self):
@@ -32,15 +34,22 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-def get_db():
+def get_equpiment_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
+def get_db_mail():
+    db = SessionLocalMail()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @router.get("/")
-def read_equipment(request: Request, db: Session = Depends(get_db)):
+def read_equipment(request: Request, db: Session = Depends(get_equpiment_db)):
     '''
     Retrieve all equipment entries from the database and render the index page with the equipment list.
     '''
@@ -52,6 +61,7 @@ def read_equipment(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/create")
 def create_form(request: Request):
+    mailer.send_email(subject="Test", body="This is a test email to verify the mailing functionality.")
     return templates.TemplateResponse("create_equipment.html", {"request": request})
 
 @router.post("/create")
@@ -66,7 +76,7 @@ def create_equipment(
     calibration_location: str = Form(None),
     calibration_provider: str = Form(None),
     calibration_price: float = Form(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_equpiment_db)
 ):
     '''
     Create a new equipment entry based on form input and save to the database.
@@ -87,7 +97,7 @@ def create_equipment(
     return RedirectResponse(url="/", status_code=303)
 
 @router.post("/calibrate/{equipment_id}")
-def calibrate(equipment_id: int, db: Session = Depends(get_db)):
+def calibrate(equipment_id: int, db: Session = Depends(get_equpiment_db)):
     '''
     Trigger calibration for the specified equipment and update its status in the database.
     '''
@@ -95,7 +105,7 @@ def calibrate(equipment_id: int, db: Session = Depends(get_db)):
     return RedirectResponse(url="/", status_code=303)
 
 @router.post("/delete/{equipment_id}")
-def delete_equipment(equipment_id: int, db: Session = Depends(get_db)):
+def delete_equipment(equipment_id: int, db: Session = Depends(get_equpiment_db)):
     equipment = db.query(crud.models.Equipment).filter(crud.models.Equipment.id == equipment_id).first()
     if equipment:
         db.delete(equipment)
@@ -103,7 +113,7 @@ def delete_equipment(equipment_id: int, db: Session = Depends(get_db)):
     return RedirectResponse(url="/", status_code=303)
 
 @router.get("/edit/{equipment_id}")
-def edit_form(request: Request, equipment_id: int, db: Session = Depends(get_db)):
+def edit_form(request: Request, equipment_id: int, db: Session = Depends(get_equpiment_db)):
     '''
     Render the edit form for a specific equipment entry. If the equipment does not exist, redirect to the index page.
     '''
@@ -125,7 +135,7 @@ def update_equipment(
     calibration_location: str = Form(None),
     calibration_provider: str = Form(None),
     calibration_price: float = Form(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_equpiment_db)
 ):
     '''
     Update equipment details based on form input and save to the database.
@@ -144,6 +154,31 @@ def update_equipment(
     )
     crud.update_equipment(db, equipment_id, equipment_data)
     return RedirectResponse(url="/", status_code=303)
+
+@router.get("/mailing")
+def create_mail_form(request: Request, db: Session = Depends(get_db_mail)):
+    recipients = crud.get_all_mail(db)
+    return templates.TemplateResponse("mailing.html", {"request": request, "recipients": recipients})
+
+@router.post("/add_mail")
+def add_mail(
+    email: str = Form(...),
+    db: Session = Depends(get_db_mail)
+):
+    '''
+    Add a new mail entry to the mailing database.
+    '''
+    mail_data = schemas.MailCreate(email=email)
+    crud.create_mail(db, mail_data)
+    return RedirectResponse(url="/mailing", status_code=303)
+
+@router.post("/delete_mail/{mail_id}")
+def delete_mail(mail_id: int, db: Session = Depends(get_db_mail)):
+    mail_entry = db.query(crud.models.Mail).filter(crud.models.Mail.id == mail_id).first()
+    if mail_entry:
+        db.delete(mail_entry)
+        db.commit()
+    return RedirectResponse(url="/mailing", status_code=303)
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

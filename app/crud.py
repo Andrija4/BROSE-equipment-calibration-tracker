@@ -37,3 +37,16 @@ def update_equipment(db: Session, equipment_id: int, equipment_data: schemas.Equ
         db.commit()
         db.refresh(equipment)
     return equipment
+
+def get_all_mail(db: Session):
+    return db.query(models.Mail).all()
+
+def create_mail(db: Session, mail: schemas.MailCreate):
+    '''
+    Create a new mail entry in the database based on the provided mail data.
+    '''
+    db_mail = models.Mail(**mail.dict())
+    db.add(db_mail)
+    db.commit()
+    db.refresh(db_mail)
+    return db_mail

@@ -1,0 +1,30 @@
+{% extends "base.html"%}
+
+{% block content %}
+<form method="post" action="/add_mail">
+    <table>
+        <tr>
+            <th>Recipient: <input type="text" name="email" placeholder="name.surname@brose.com"><br></th>
+            <th><button type="submit">Add Recipient</button></th>
+            <th><button type="button" onclick="window.location.href='/';">Back</button></th>
+        </tr>
+    </table>
+
+    <table border="1">
+        <tr>
+            <th>Recipients</th>
+        </tr>
+        {% for recipient in recipients %}
+        <tr id = "row-{{ recipient.id }}">
+            <td>{{ recipient.email }}</td>
+            <td>
+                <form method="POST" action="/delete_mail/{{ recipient.id }}" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</form>
+{% endblock %}

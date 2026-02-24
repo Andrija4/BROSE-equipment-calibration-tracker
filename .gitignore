@@ -1,1 +1,13 @@
-calibration.db
+# IDE
+venv/
+vscode/
+.vscode/
+.idea/
+
+# Python noise
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Databases
+.db/

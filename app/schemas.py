@@ -12,3 +12,6 @@ class EquipmentCreate(BaseModel):
     calibration_location: str
     calibration_provider: str
     calibration_price: float
+
+class MailCreate(BaseModel):
+    email: str
