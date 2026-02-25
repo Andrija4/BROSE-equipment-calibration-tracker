@@ -1,7 +1,6 @@
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
-from sqlalchemy.orm import Session
 from ..database import SessionLocalMail
 from .. import crud
 

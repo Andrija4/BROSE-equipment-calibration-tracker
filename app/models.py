@@ -1,9 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, Boolean
 from datetime import date, timedelta
 from .database import Base
-from .mailing.mailer import Mailer
-
-mailer = Mailer()  # Initialize the mailer to ensure the database is set up
 
 class Equipment(Base):
     __tablename__ = "equipment"
