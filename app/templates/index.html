@@ -2,8 +2,34 @@
 
 {% block content %}
 <a href="/create">Add equipment</a>
+
+<div style="margin: 20px 0;">
+    <label for="sort-column">Sort by:</label>
+    <select id="sort-column" onchange="sortTable()">
+        <option value="0">id</option>
+        <option value="1">Name</option>
+        <option value="2">Brose SAP Number</option>
+        <option value="3">Serial Number</option>
+        <option value="4">Location</option>
+        <option value="5">Responsible Person</option>
+        <option value="6">Last Calibration</option>
+        <option value="7">Next Calibration</option>
+        <option value="8">Calibration Location</option>
+        <option value="9">Calibration Provider</option>
+        <option value="10">Price of Calibration</option>
+        <option value="11">Status</option>
+    </select>
+    
+    <label for="sort-order" style="margin-left: 20px;">Order:</label>
+    <select id="sort-order" onchange="sortTable()">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+    </select>
+</div>
+
 <table border="1">
     <tr>
+        <th>id</th>
         <th>Name</th>
         <th>Brose SAP Number</th>
         <th>Serial Number</th>
@@ -21,6 +47,7 @@
     </tr>
     {% for eq in equipment %}
     <tr id="row-{{ eq.id }}">
+        <td>{{ eq.id }}</td>
         <td>{{ eq.name }}</td>
         <td>{{ eq.brose_sap }}</td>
         <td>{{ eq.serial_number }}</td>
@@ -90,6 +117,51 @@
             location.reload();
         }, 3000);
     };
+    
+    function sortTable() {
+        const table = document.querySelector("table");
+        const sortColumn = document.getElementById("sort-column").value;
+        const sortOrder = document.getElementById("sort-order").value;
+        
+        if (!sortColumn) return;
+        
+        const tbody = table.querySelector("tbody") || table; // Handle both tbody and table direct rows
+        const rows = Array.from(tbody.querySelectorAll("tr")).filter(row => row.id);
+        
+        rows.sort((a, b) => {
+            const cellA = a.cells[sortColumn];
+            const cellB = b.cells[sortColumn];
+            
+            if (!cellA || !cellB) return 0;
+            
+            let valueA = cellA.textContent.trim();
+            let valueB = cellB.textContent.trim();
+            
+            // Try to parse as numbers
+            const numA = parseFloat(valueA);
+            const numB = parseFloat(valueB);
+            
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return sortOrder === "asc" ? numA - numB : numB - numA;
+            }
+            
+            // Try to parse as dates (YYYY-MM-DD format)
+            const dateA = new Date(valueA);
+            const dateB = new Date(valueB);
+            
+            if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+                return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+            }
+            
+            // String comparison
+            return sortOrder === "asc" 
+                ? valueA.localeCompare(valueB) 
+                : valueB.localeCompare(valueA);
+        });
+        
+        // Reorder rows in the table
+        rows.forEach(row => tbody.appendChild(row));
+    }
 </script>
 {% endblock %}
  

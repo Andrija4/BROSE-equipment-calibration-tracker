@@ -9,22 +9,22 @@
             <th><button type="button" onclick="window.location.href='/';">Back</button></th>
         </tr>
     </table>
-
-    <table border="1">
-        <tr>
-            <th>Recipients</th>
-        </tr>
-        {% for recipient in recipients %}
-        <tr id = "row-{{ recipient.id }}">
-            <td>{{ recipient.email }}</td>
-            <td>
-                <form method="POST" action="/delete_mail/{{ recipient.id }}" style="display:inline;">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-
 </form>
+
+<table border="1">
+    <tr>
+        <th>Recipients</th>
+    </tr>
+    {% for recipient in recipients %}
+    <tr id = "row-{{ recipient.id }}">
+        <td>{{ recipient.email }}</td>
+        <td>
+            <form method="POST" action="/delete_mail/{{ recipient.id }}" style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
 {% endblock %}
