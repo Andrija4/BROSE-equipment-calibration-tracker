@@ -27,6 +27,22 @@
     </select>
 </div>
 
+<div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+    <label for="filter-column">Filter by:</label>
+    <select id="filter-column" onchange="filterTable()">
+        <option value="">-- Select Column --</option>
+        <option value="1">Name</option>
+        <option value="2">Brose SAP Number</option>
+        <option value="4">Location</option>
+        <option value="5">Responsible Person</option>
+        <option value="6">Last Calibration</option>
+        <option value="11">Status</option>
+    </select>
+    
+    <input type="text" id="filter-text" placeholder="Enter text to filter..." style="margin-left: 10px; padding: 5px; width: 250px;" onkeyup="filterTable()">
+    <button onclick="clearFilter()" style="margin-left: 10px; padding: 5px 10px;">Clear Filter</button>
+</div>
+
 <table border="1">
     <tr>
         <th>id</th>
@@ -78,6 +94,28 @@
 <a href="/mailing">Add mail</a>
 
 <script>
+    function applyStatusColor(statusCell) {
+        const status = statusCell.textContent.trim();
+        if (status === "EXPIRED") {
+            statusCell.style.color = "red";
+            statusCell.style.fontWeight = "bold";
+        } else if (status === "DUE SOON") {
+            statusCell.style.color = "orange";
+            statusCell.style.fontWeight = "bold";
+        } else if (status === "CALIBRATING") {
+            statusCell.style.color = "blue";
+            statusCell.style.fontWeight = "bold";
+        } else {
+            statusCell.style.color = "green";
+            statusCell.style.fontWeight = "normal";
+        }
+    }
+    
+    // Apply colors on page load
+    document.querySelectorAll('td[id^="status-"]').forEach(cell => {
+        applyStatusColor(cell);
+    });
+    
     const ws = new WebSocket(`ws://${window.location.host}/ws`);
     
     ws.onmessage = function(event) {
@@ -88,17 +126,7 @@
             
             if (statusCell) {
                 statusCell.textContent = item.status;
-                // Add color coding based on status
-                if (item.status === "EXPIRED") {
-                    statusCell.style.color = "red";
-                    statusCell.style.fontWeight = "bold";
-                } else if (item.status === "DUE SOON") {
-                    statusCell.style.color = "orange";
-                    statusCell.style.fontWeight = "bold";
-                } else {
-                    statusCell.style.color = "green";
-                    statusCell.style.fontWeight = "normal";
-                }
+                applyStatusColor(statusCell);
             }
             
             if (nextCalibrationCell) {
@@ -162,6 +190,40 @@
         // Reorder rows in the table
         rows.forEach(row => tbody.appendChild(row));
     }
+
+    function filterTable() {
+        const table = document.querySelector("table");
+        const filterColumn = document.getElementById("filter-column").value;
+        const filterText = document.getElementById("filter-text").value.toLowerCase();
+        
+        const tbody = table.querySelector("tbody") || table;
+        const rows = tbody.querySelectorAll("tr[id]");
+        
+        rows.forEach(row => {
+            if (!filterColumn) {
+                // If no column selected, show all rows
+                row.style.display = "";
+            } else {
+                const cell = row.cells[filterColumn];
+                if (cell) {
+                    const cellText = cell.textContent.trim().toLowerCase();
+                    // Show row if it contains the filter text, hide otherwise
+                    row.style.display = cellText.includes(filterText) ? "" : "none";
+                } else {
+                    row.style.display = "";
+                }
+            }
+        });
+    }
+
+    function clearFilter() {
+        document.getElementById("filter-column").value = "";
+        document.getElementById("filter-text").value = "";
+        filterTable();
+    }
+
+
+
 </script>
 {% endblock %}
  

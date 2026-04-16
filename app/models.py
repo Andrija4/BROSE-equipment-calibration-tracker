@@ -15,10 +15,11 @@ class Equipment(Base):
     interval_days = Column(Integer, nullable=False)
     calibration_location = Column(String, nullable=False)
     calibration_provider = Column(String, nullable=True)
-    calibration_price = Column(Integer, nullable=False)
+    calibration_price = Column(Integer, nullable=True)
     email_sent_30_days = Column(Boolean, default=False)
     email_sent_7_days = Column(Boolean, default=False)
     email_sent_expired = Column(Boolean, default=False)
+    is_calibrating = Column(Boolean, default=False)
 
     @property
     def next_calibration(self):
@@ -26,6 +27,8 @@ class Equipment(Base):
     
     @property
     def status(self):
+        if self.is_calibrating:
+            return "CALIBRATING"
         days_left = (self.next_calibration - date.today()).days
         if days_left < 0:
             return "EXPIRED"

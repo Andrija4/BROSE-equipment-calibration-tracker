@@ -7,10 +7,8 @@
     Serial Number: <input type="text" name="serial_number"><br>
     Location: <select type="text" name="location" id="location">
         <option value="AEL Laboratory">AEL Laboratory</option>
-        <option value="HW Office">HW Office</option>
-        <option value="Pulse Generator">Pulse Generator</option>
-        <option value="Software Engineers">Software Engineers</option>
-        <option value="System Engineers">System Engineers</option>
+        <option value="EMC Laboratory">EMC Laboratory</option>
+        <option value="Test Area">Test Area</option>
     </select><br>
     Responsible Person: <input type="text" name="responsible_person" value="None"><br>
     Last Calibration: <input type="date" name="last_calibration"><br>
@@ -18,11 +16,9 @@
     Calibration Location: <select type="text" name="calibration_location" id="calibration_location">
         <option value="EX">External</option>
         <option value="IN">Internal</option>
-        <option value="ET">Etalon</option>
-        <option value="SP">Supplier</option>
     </select><br>
     Name of Calibration Provider: <input type="text" name="calibration_provider" value="None"><br>
-    Price of Calibration: <input type="number" name="calibration_price" step="0.01">€<br>
+    Price of Calibration: <input type="number" name="calibration_price" step="0.01" value="0">€<br>
     <button type="submit">Save</button>
 </form>
 {% endblock %}

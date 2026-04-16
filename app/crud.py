@@ -17,15 +17,21 @@ def create_equipment(db: Session, equipment: schemas.EquipmentCreate):
 
 def calibrate_equipment(db: Session, equipment_id: int):
     '''
-    Calibrate the specified equipment by updating its last_calibration date to today and recalculating the next calibration date.
+    Toggle calibration status. If not calibrating, set to CALIBRATING. If calibrating, update date and set to OK.
     '''
     equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
     if equipment:
-        equipment.last_calibration = date.today()
-        # Reset flag so email can be sent again if needed
-        equipment.email_sent_30_days = False
-        equipment.email_sent_7_days = False
-        equipment.email_sent_expired = False
+        if equipment.is_calibrating:
+            # Second click: update date and return to OK
+            equipment.is_calibrating = False
+            equipment.last_calibration = date.today()
+            # Reset flag so email can be sent again if needed
+            equipment.email_sent_30_days = False
+            equipment.email_sent_7_days = False
+            equipment.email_sent_expired = False
+        else:
+            # First click: set to CALIBRATING
+            equipment.is_calibrating = True
 
         db.commit()
         db.refresh(equipment)
