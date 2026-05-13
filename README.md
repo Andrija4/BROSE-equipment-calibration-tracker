@@ -144,7 +144,3 @@ pyinstaller --noconfirm --onefile --console --name "CalibrationApp" ^
 --add-data "app/templates;app/templates" ^
 run.py
 ```
-
-## License
-
-This project is proprietary and intended for use by Brose test engineers.

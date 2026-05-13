@@ -66,3 +66,4 @@ def create_mail(db: Session, mail: schemas.MailCreate):
     db.commit()
     db.refresh(db_mail)
     return db_mail
+ 

@@ -15,3 +15,4 @@ class EquipmentCreate(BaseModel):
 
 class MailCreate(BaseModel):
     email: str
+ 

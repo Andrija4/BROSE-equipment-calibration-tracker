@@ -8,3 +8,4 @@ Base.metadata.create_all(bind=engine_mail)
 app = FastAPI(title="Calibration Tracker")
 
 app.include_router(equipment.router)
+ 

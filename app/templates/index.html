@@ -145,6 +145,29 @@
             location.reload();
         }, 3000);
     };
+
+    document.addEventListener('DOMContentLoaded', function() { // Load saved state from session storage when the page loads
+        const saved = JSON.parse(sessionStorage.getItem('tableState') || '{}');
+        
+        if (saved.sortColumn) document.getElementById('sort-column').value = saved.sortColumn;
+        if (saved.sortOrder) document.getElementById('sort-order').value = saved.sortOrder;
+        if (saved.filterColumn) document.getElementById('filter-column').value = saved.filterColumn;
+        if (saved.filterText) document.getElementById('filter-text').value = saved.filterText;
+        
+        if (saved.sortColumn || saved.filterColumn) {
+            sortTable();
+            filterTable();
+        }
+    });
+
+    function saveTableState() {  //Created json object to save the state of the table in session storage (browser memory)
+        sessionStorage.setItem('tableState', JSON.stringify({
+            sortColumn: document.getElementById('sort-column').value,
+            sortOrder: document.getElementById('sort-order').value,
+            filterColumn: document.getElementById('filter-column').value,
+            filterText: document.getElementById('filter-text').value
+        }));
+    }
     
     function sortTable() {
         const table = document.querySelector("table");
@@ -189,6 +212,7 @@
         
         // Reorder rows in the table
         rows.forEach(row => tbody.appendChild(row));
+        saveTableState();
     }
 
     function filterTable() {
@@ -214,6 +238,7 @@
                 }
             }
         });
+        saveTableState();
     }
 
     function clearFilter() {
@@ -221,8 +246,6 @@
         document.getElementById("filter-text").value = "";
         filterTable();
     }
-
-
 
 </script>
 {% endblock %}

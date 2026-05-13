@@ -44,3 +44,4 @@ def set_sqlite_pragma_mail(dbapi_connection, connection_record):
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.close()
+ 

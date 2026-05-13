@@ -72,21 +72,73 @@ def create_form(request: Request):
 
 @router.post("/create")
 def create_equipment(
+    request: Request,
     name: str = Form(...),
     brose_sap: str = Form(...),
     serial_number: str = Form(...),
     location: str = Form(...),
-    responsible_person: str = Form(None),
+    responsible_person: str = Form(""),
     last_calibration: date = Form(...),
     interval_days: int = Form(...),
-    calibration_location: str = Form(None),
-    calibration_provider: str = Form(None),
-    calibration_price: float = Form(None),
+    calibration_location: str = Form(...),
+    calibration_provider: str = Form(""),
+    calibration_price: str = Form(""),
     db: Session = Depends(get_equpiment_db)
 ):
     '''
     Create a new equipment entry based on form input and save to the database.
     '''
+    required_fields = {
+        'name': name,
+        'brose_sap': brose_sap,
+        'serial_number': serial_number,
+        'location': location,
+        'last_calibration': last_calibration,
+        'interval_days': interval_days
+    }
+
+    for field_name, field_value in required_fields.items():
+        if not field_value or (isinstance(field_value, str) and not field_value.strip()):
+            return templates.TemplateResponse(
+                "create_equipment.html",
+                {
+                    "request": request,
+                    "error": f"Required field '{field_name}' cannot be empty!"
+                }
+            )
+
+    # Check if brose_sap already exists
+    existing_equipment = db.query(crud.models.Equipment).filter(
+        crud.models.Equipment.brose_sap == brose_sap
+    ).first()
+    
+    if existing_equipment:
+        return templates.TemplateResponse(
+            "create_equipment.html",
+            {
+                "request": request,
+                "error": f"Equipment with Brose SAP Number '{brose_sap}' already exists!"
+            }
+        )
+    
+    existing_equipment = db.query(crud.models.Equipment).filter(
+        crud.models.Equipment.serial_number == serial_number
+    ).first()
+    
+    if existing_equipment:
+        return templates.TemplateResponse(
+            "create_equipment.html",
+            {
+                "request": request,
+                "error": f"Equipment with Serial Number '{serial_number}' already exists!"
+            }
+        )
+    
+    # Convert empty strings to None for optional fields
+    responsible_person = responsible_person.strip() if responsible_person.strip() else None
+    calibration_provider = calibration_provider.strip() if calibration_provider.strip() else None
+    calibration_price = float(calibration_price) if calibration_price.strip() else None
+    
     equipment_data = schemas.EquipmentCreate(
         name=name,
         brose_sap=brose_sap,
@@ -130,22 +182,73 @@ def edit_form(request: Request, equipment_id: int, db: Session = Depends(get_equ
 
 @router.post("/update/{equipment_id}")
 def update_equipment(
+    request: Request,
     equipment_id: int,
     name: str = Form(...),
     brose_sap: str = Form(...),
     serial_number: str = Form(...),
     location: str = Form(...),
-    responsible_person: str = Form(None),
+    responsible_person: str = Form(""),
     last_calibration: date = Form(...),
     interval_days: int = Form(...),
-    calibration_location: str = Form(None),
-    calibration_provider: str = Form(None),
-    calibration_price: float = Form(None),
+    calibration_location: str = Form(...),
+    calibration_provider: str = Form(""),
+    calibration_price: str = Form(""),
     db: Session = Depends(get_equpiment_db)
 ):
     '''
     Update equipment details based on form input and save to the database.
     '''
+    # Get the current equipment
+    current_equipment = db.query(crud.models.Equipment).filter(
+        crud.models.Equipment.id == equipment_id
+    ).first()
+    
+    if not current_equipment:
+        return RedirectResponse(url="/", status_code=303)
+    
+    # Convert empty strings to None for optional fields
+    responsible_person = responsible_person.strip() if responsible_person.strip() else None
+    calibration_provider = calibration_provider.strip() if calibration_provider.strip() else None
+    calibration_price = float(calibration_price) if calibration_price.strip() else None
+    
+    # Check if brose_sap is being changed and if it already exists in another equipment
+    if brose_sap != current_equipment.brose_sap:
+        existing_equipment = db.query(crud.models.Equipment).filter(
+            crud.models.Equipment.brose_sap == brose_sap
+        ).first()
+
+        if existing_equipment:
+            equipment = db.query(crud.models.Equipment).filter(
+                crud.models.Equipment.id == equipment_id
+            ).first()
+            return templates.TemplateResponse(
+                "edit_equipment.html",
+                {
+                    "request": request,
+                    "equipment": equipment,
+                    "error": f"Equipment with Brose SAP Number '{brose_sap}' already exists!"
+                }
+            )
+
+    if serial_number != current_equipment.serial_number:
+        existing_equipment = db.query(crud.models.Equipment).filter(
+            crud.models.Equipment.serial_number == serial_number
+        ).first()
+        
+        if existing_equipment:
+            equipment = db.query(crud.models.Equipment).filter(
+                crud.models.Equipment.id == equipment_id
+            ).first()
+            return templates.TemplateResponse(
+                "edit_equipment.html",
+                {
+                    "request": request,
+                    "equipment": equipment,
+                    "error": f"Equipment with Serial Number '{serial_number}' already exists!"
+                }
+            )
+    
     equipment_data = schemas.EquipmentCreate(
         name=name,
         brose_sap=brose_sap,
@@ -237,3 +340,4 @@ async def websocket_endpoint(websocket: WebSocket):
             await manager.broadcast(json.dumps(status_data))
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+ 

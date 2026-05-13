@@ -1,24 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if error %}
+<div style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border: 1px solid #f5c6cb; border-radius: 4px;">
+    <strong>Error:</strong> {{ error }}
+</div>
+{% endif %}
+
 <form method="post">
-    Name of Equipment: <input type="text" name="name"><br>
-    Brose SAP Number: <input type="text" name="brose_sap"><br>
-    Serial Number: <input type="text" name="serial_number"><br>
-    Location: <select type="text" name="location" id="location">
+    Name of Equipment: <input type="text" name="name" required><br>
+    Brose SAP Number: <input type="text" name="brose_sap" required><br>
+    Serial Number: <input type="text" name="serial_number" required><br>
+    Location: <select name="location" id="location" required>
         <option value="AEL Laboratory">AEL Laboratory</option>
         <option value="EMC Laboratory">EMC Laboratory</option>
         <option value="Test Area">Test Area</option>
     </select><br>
-    Responsible Person: <input type="text" name="responsible_person" value="None"><br>
-    Last Calibration: <input type="date" name="last_calibration"><br>
-    Interval (days): <input type="number" name="interval_days"><br>
-    Calibration Location: <select type="text" name="calibration_location" id="calibration_location">
+    Responsible Person: <input type="text" name="responsible_person" required><br>
+    Last Calibration: <input type="date" name="last_calibration" required><br>
+    Interval (days): <input type="number" name="interval_days" required min="1"><br>
+    Calibration Location: <select name="calibration_location" id="calibration_location" required>
         <option value="EX">External</option>
         <option value="IN">Internal</option>
     </select><br>
     Name of Calibration Provider: <input type="text" name="calibration_provider" value="None"><br>
-    Price of Calibration: <input type="number" name="calibration_price" step="0.01" value="0">€<br>
+    Price of Calibration: <input type="number" name="calibration_price" step="0.01" value="0.00">€<br>
     <button type="submit">Save</button>
 </form>
 {% endblock %}
+ 
